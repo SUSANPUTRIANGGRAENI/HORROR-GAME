@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -6,10 +6,21 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovements : MonoBehaviour
 {
+
+    public Transform spawnPoint;
+    public float respawnDelay = 2f;
+    public Transform playerCamera;
+    private CharacterController controller;
+    private bool isDead = false;
+
+    private float xRotation = 0f;
+    private Transform lastEnemyHit;
+    private bool isLookingAtEnemy = false;
+
     private PlayerInput playerInput;
     private InputAction moveAction;
 
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private LayerMask groundMask;
 
     public float MoveSpeed
@@ -26,6 +37,10 @@ public class PlayerMovements : MonoBehaviour
     {
         playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions.FindAction("Move");
+
+        controller = GetComponent<CharacterController>();
+        animator = GetComponent<Animator>();
+        Cursor.lockState = CursorLockMode.Locked;
 
         if (moveAction == null)
         {
@@ -49,12 +64,91 @@ public class PlayerMovements : MonoBehaviour
 
     private void Update()
     {
+        if (isLookingAtEnemy)
+        {
+            // Saat jumpscare, jangan bisa gerak
+            return;
+        }
+        if (isDead) return;
+
         MovePlayer();
-        FaceCameraForward();  // Selalu menghadap ke depan kamera, statis
+        //FaceCameraForward();  // Selalu menghadap ke depan kamera, statis
+    }
+
+    
+
+
+    void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.gameObject.CompareTag("Musuh") && !isDead)
+        {
+            Debug.Log("Menabrak musuh!");
+            // animator.SetTrigger("Dead"); // Aktifkan jika kamu punya animasi
+            isDead = true;
+            lastEnemyHit = hit.transform;
+            StartCoroutine(HandleDeathAndRespawn());
+        }
+    }
+
+    IEnumerator HandleDeathAndRespawn()
+    {
+        isLookingAtEnemy = true;
+
+        if (playerCamera != null && lastEnemyHit != null)
+        {
+            // 🔁 Paksa badan player menghadap musuh
+            Vector3 dirToEnemy = lastEnemyHit.position - transform.position;
+            dirToEnemy.y = 0f; // Abaikan tinggi biar tidak miring
+            Quaternion bodyLookRotation = Quaternion.LookRotation(dirToEnemy);
+            transform.rotation = bodyLookRotation;
+
+            // 🔁 Paksa kamera menghadap musuh (dari posisi kamera ke musuh)
+            Vector3 camToEnemy = lastEnemyHit.position - playerCamera.position;
+            Quaternion camLookRotation = Quaternion.LookRotation(camToEnemy.normalized);
+            playerCamera.rotation = camLookRotation;
+
+            // 🔒 Reset xRotation agar tidak membelokkan kamera setelah respawn
+            xRotation = playerCamera.localEulerAngles.x;
+        }
+
+        yield return new WaitForSeconds(respawnDelay);
+
+        // Respawn
+        controller.enabled = false;
+        transform.position = spawnPoint.position;
+        controller.enabled = true;
+
+        isDead = false;
+        isLookingAtEnemy = false;
+
+        Debug.Log("Respawn selesai");
+    }
+
+
+
+    void LookAtEnemy()
+    {
+        if (playerCamera != null && lastEnemyHit != null)
+        {
+            Vector3 dirToEnemy = lastEnemyHit.position - playerCamera.position;
+            Quaternion lookRot = Quaternion.LookRotation(dirToEnemy.normalized);
+            playerCamera.rotation = Quaternion.Slerp(playerCamera.rotation, lookRot, Time.deltaTime * 5f);
+        }
     }
 
     private void MovePlayer()
     {
+        //Vector2 inputDirection = moveAction.ReadValue<Vector2>();
+        //Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
+
+        //if (moveDirection.sqrMagnitude > 0.01f)
+        //{
+        //    moveDirection = CameraRelativeDirection(moveDirection);
+        //    characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+        //}
+
+        //UpdateAnimation(inputDirection);
+
         Vector2 inputDirection = moveAction.ReadValue<Vector2>();
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
 
@@ -62,9 +156,14 @@ public class PlayerMovements : MonoBehaviour
         {
             moveDirection = CameraRelativeDirection(moveDirection);
             characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+
+            // ROTASI: menghadap ke arah gerakan
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f);
         }
 
         UpdateAnimation(inputDirection);
+
     }
 
     // Gerak relatif terhadap kamera
@@ -114,4 +213,6 @@ public class PlayerMovements : MonoBehaviour
     {
         MoveSpeed = newSpeed;
     }
+
+
 }
