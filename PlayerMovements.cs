@@ -66,13 +66,12 @@ public class PlayerMovements : MonoBehaviour
     {
         if (isLookingAtEnemy)
         {
-            // Saat jumpscare, jangan bisa gerak
             return;
         }
         if (isDead) return;
 
         MovePlayer();
-        //FaceCameraForward();  // Selalu menghadap ke depan kamera, statis
+        //FaceCameraForward();
     }
 
     
@@ -83,7 +82,7 @@ public class PlayerMovements : MonoBehaviour
         if (hit.gameObject.CompareTag("Musuh") && !isDead)
         {
             Debug.Log("Menabrak musuh!");
-            // animator.SetTrigger("Dead"); // Aktifkan jika kamu punya animasi
+            // animator.SetTrigger("Dead"); 
             isDead = true;
             lastEnemyHit = hit.transform;
             StartCoroutine(HandleDeathAndRespawn());
@@ -96,24 +95,20 @@ public class PlayerMovements : MonoBehaviour
 
         if (playerCamera != null && lastEnemyHit != null)
         {
-            // 🔁 Paksa badan player menghadap musuh
             Vector3 dirToEnemy = lastEnemyHit.position - transform.position;
             dirToEnemy.y = 0f; // Abaikan tinggi biar tidak miring
             Quaternion bodyLookRotation = Quaternion.LookRotation(dirToEnemy);
             transform.rotation = bodyLookRotation;
 
-            // 🔁 Paksa kamera menghadap musuh (dari posisi kamera ke musuh)
             Vector3 camToEnemy = lastEnemyHit.position - playerCamera.position;
             Quaternion camLookRotation = Quaternion.LookRotation(camToEnemy.normalized);
             playerCamera.rotation = camLookRotation;
 
-            // 🔒 Reset xRotation agar tidak membelokkan kamera setelah respawn
             xRotation = playerCamera.localEulerAngles.x;
         }
 
         yield return new WaitForSeconds(respawnDelay);
 
-        // Respawn
         controller.enabled = false;
         transform.position = spawnPoint.position;
         controller.enabled = true;
@@ -147,8 +142,6 @@ public class PlayerMovements : MonoBehaviour
         //    characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
         //}
 
-        //UpdateAnimation(inputDirection);
-
         Vector2 inputDirection = moveAction.ReadValue<Vector2>();
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
 
@@ -157,7 +150,6 @@ public class PlayerMovements : MonoBehaviour
             moveDirection = CameraRelativeDirection(moveDirection);
             characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
 
-            // ROTASI: menghadap ke arah gerakan
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f);
         }
@@ -166,7 +158,6 @@ public class PlayerMovements : MonoBehaviour
 
     }
 
-    // Gerak relatif terhadap kamera
     private Vector3 CameraRelativeDirection(Vector3 inputDirection)
     {
         Vector3 forward = camTransform.forward;
@@ -181,7 +172,6 @@ public class PlayerMovements : MonoBehaviour
         return (forward * inputDirection.z + right * inputDirection.x).normalized;
     }
 
-    // Fungsi untuk membuat karakter selalu menghadap depan kamera (statik)
     private void FaceCameraForward()
     {
         Vector3 forward = camTransform.forward;
