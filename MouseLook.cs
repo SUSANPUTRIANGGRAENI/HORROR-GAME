@@ -32,7 +32,6 @@ public class MouseLook : MonoBehaviour
 
         transform.rotation = targetRotation;
 
-        // Reset xRotation untuk mencegah kamera loncat
         xRotation = transform.eulerAngles.x;
     }
 
