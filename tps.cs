@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class tps : MonoBehaviour
 {
-    public Transform target;            // Target untuk diikuti (karakter)
-    public Vector3 offset = new Vector3(0, 2, -5); // Jarak kamera ke target
-    public float followSpeed = 10f;     // Seberapa cepat kamera mengikuti
-    public float rotationSpeed = 5f;    // Sensitivitas rotasi mouse
+    public Transform target; 
+    public Vector3 offset = new Vector3(0, 2, -5);
+    public float followSpeed = 10f;
+    public float rotationSpeed = 5f;
 
     public float zoomSpeed = 2f;
     public float minZoom = 2f;
@@ -15,8 +15,8 @@ public class tps : MonoBehaviour
     public float maxPitch = 60f;
 
     private float currentZoom;
-    private float yaw = 0f;     // rotasi horizontal
-    private float pitch = 20f;  // rotasi vertikal
+    private float yaw = 0f;
+    private float pitch = 20f;
 
     void Start()
     {
@@ -31,12 +31,10 @@ public class tps : MonoBehaviour
 
     void HandleInput()
     {
-        // Zoom
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         currentZoom -= scroll * zoomSpeed;
         currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
 
-        // Rotasi mouse kanan
         if (Input.GetMouseButton(1)) // Klik kanan
         {
             yaw += Input.GetAxis("Mouse X") * rotationSpeed;
