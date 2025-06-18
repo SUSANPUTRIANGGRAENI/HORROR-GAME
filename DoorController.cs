@@ -14,7 +14,6 @@ public class DoorController : MonoBehaviour
         }
     }
 
-    // Fungsi untuk membuka/tutup pintu
     public void ToggleDoor()
     {
         if (animator == null)
@@ -28,8 +27,6 @@ public class DoorController : MonoBehaviour
         Debug.Log("Set open ke: " + open);
     }
 
-
-    // Pintu terbuka saat player masuk area trigger
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.E))
@@ -46,7 +43,7 @@ public class DoorController : MonoBehaviour
             float distance = Vector3.Distance(transform.position, playerObj.transform.position);
             Debug.Log("Jarak ke player: " + distance);
 
-            if (distance < 3f) // Jarak maksimum interaksi
+            if (distance < 3f)
             {
                 Debug.Log("Player dalam jangkauan, membuka/menutup pintu...");
                 ToggleDoor();
@@ -58,8 +55,6 @@ public class DoorController : MonoBehaviour
         }
     }
 
-
-    // Pintu tertutup saat player keluar area trigger
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
