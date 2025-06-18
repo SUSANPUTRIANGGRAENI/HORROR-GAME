@@ -41,7 +41,6 @@ public class EnemyAI : MonoBehaviour
         if (agent == null) Debug.LogError("NavMeshAgent not found on enemy!");
         if (animator == null) Debug.LogError("Animator not found on enemy!");
 
-        // Nonaktifkan rotasi otomatis agar kita bisa atur manual
         agent.updateRotation = false;
     }
 
@@ -52,7 +51,6 @@ public class EnemyAI : MonoBehaviour
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
 
-        // Set animasi jalan hanya jika sedang bergerak
         if (animator != null)
         {
             bool isWalking = agent.remainingDistance > agent.stoppingDistance && agent.velocity.magnitude > 0.1f;
@@ -64,7 +62,7 @@ public class EnemyAI : MonoBehaviour
         else if (playerInSightRange && !playerInAttackRange)
             ChasePlayer();
         else if (playerInAttackRange)
-            ChasePlayer(); // Bisa diganti jadi AttackPlayer() jika ada logika serangan
+            ChasePlayer();
     }
 
     private void Patroling()
@@ -97,14 +95,13 @@ public class EnemyAI : MonoBehaviour
     private void ChasePlayer()
     {
         agent.SetDestination(player.position);
-        FaceTarget(); // Biar menghadap ke player
+        FaceTarget();
     }
 
-    // Memutar tubuh musuh menghadap ke player
     private void FaceTarget()
     {
         Vector3 direction = (player.position - transform.position).normalized;
-        direction.y = 0f; // Hindari miring ke atas/bawah
+        direction.y = 0f;
 
         if (direction.magnitude > 0.1f)
         {
