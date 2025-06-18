@@ -4,29 +4,26 @@ using UnityEngine;
 
 public class FirstPersonCamera : MonoBehaviour
 {
-    public Transform playerBody; // drag objek Player ke sini di Inspector
+    public Transform playerBody;
     public float mouseSensitivity = 100f;
 
     float xRotation = 0f;
 
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked; // kunci kursor ke tengah layar
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Update()
     {
-        // Ambil input mouse
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        // Rotasi vertikal kamera
         xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f); // agar tidak bisa muter 360 derajat ke atas
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f); // rotasi kamera
+        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
-        // Rotasi horizontal player
         playerBody.Rotate(Vector3.up * mouseX); // rotasi player (horizontal)
     }
 }
